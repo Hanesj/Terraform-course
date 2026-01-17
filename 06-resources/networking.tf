@@ -40,3 +40,46 @@ resource "aws_route_table_association" "main_rtb" {
   route_table_id = aws_route_table.public.id
 
 }
+
+resource "aws_security_group" "public_traffic" {
+  description = "Sec group for http traffic"
+  name        = "public traffic"
+  vpc_id      = aws_vpc.main.id
+
+}
+resource "aws_vpc_security_group_ingress_rule" "http" {
+  security_group_id = aws_security_group.public_traffic.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 80
+  to_port           = 80
+  ip_protocol       = "tcp"
+}
+resource "aws_vpc_security_group_ingress_rule" "https" {
+  security_group_id = aws_security_group.public_traffic.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
+}
+
+resource "aws_security_group" "private_traffic" {
+  description = "Sec group for private traffice"
+  name = "private traffic"
+  vpc_id = aws_vpc.main.id
+}
+resource "aws_vpc_security_group_ingress_rule" "postgres" {
+    security_group_id = aws_security_group.private_traffic.id
+    cidr_ipv4 = "10.0.0.0/24"
+    from_port = 5432
+    to_port = 5432
+    ip_protocol = "tcp"
+  
+}
+resource "aws_vpc_security_group_egress_rule" "postgres" {
+    security_group_id = aws_security_group.private_traffic.id
+    cidr_ipv4 = "10.0.0.0/24"
+    from_port = 5432
+    to_port = 5432
+    ip_protocol = "tcp"
+  
+}
